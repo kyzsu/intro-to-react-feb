@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 
+import Cart from "./Cart";
 import Pizza from "./Pizza";
 
 // format kurs --> intl menerima sebuah angka dan kemudian dia akan nge-format berdasarkan kurs yang dipilih.
@@ -13,6 +14,7 @@ export default function Order() {
   const [jenisPizza, aturJenisPizza] = useState("pepperoni"); // nilai default -> pepperoni
   const [jenis2Pizza, aturJenis2Pizza] = useState([]); // menyimpan jenis-jenis pizza yang diterima dari API.
   const [loading, aturLoading] = useState(true); // menyimpan state dari pada fetching.
+  const [cart, aturCart] = useState([]);
 
   let price, selectedPizza;
   if (!loading) {
@@ -21,6 +23,23 @@ export default function Order() {
     price = intl.format(
       selectedPizza.sizes ? selectedPizza.sizes[ukuranPizza] : "",
     ); // ngeformat harga berdasarkan pizza yang dipilih.
+  }
+
+  async function checkout() {
+    aturLoading(true);
+
+    await fetch("/api/order", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        cart,
+      }),
+    });
+
+    aturCart([]);
+    aturLoading(false);
   }
 
   async function fetchPizzaTypes() {
@@ -36,12 +55,18 @@ export default function Order() {
     fetchPizzaTypes();
   }, []); // arg pertama adl callback, arg 2 adl dependency list. jika dep listnya kosong / [], dia akan menjalankan fungsi callbacknya diawal saja. tapi jika ada dep listnya, maka dia akan menjalankan callback setiap dep list mengalami perubahan nilai.
 
-  console.log(selectedPizza);
-
   return (
     <div className="order">
       <h2>Buat Order Baru</h2>
-      <form>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          aturCart([
+            ...cart,
+            { pizza: selectedPizza, size: ukuranPizza, price },
+          ]);
+        }}
+      >
         <div>
           <div>
             <select
@@ -112,6 +137,7 @@ export default function Order() {
           </div>
         )}
       </form>
+      {loading ? <h2>Loading...</h2> : <Cart cart={cart} checkout={checkout} />}
     </div>
   );
 }
