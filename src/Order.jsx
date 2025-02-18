@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 
 import Cart from "./Cart";
 import Pizza from "./Pizza";
+import { CartContext } from "./contexts";
 
 // format kurs --> intl menerima sebuah angka dan kemudian dia akan nge-format berdasarkan kurs yang dipilih.
 const intl = new Intl.NumberFormat("en-US", {
@@ -14,7 +15,7 @@ export default function Order() {
   const [jenisPizza, aturJenisPizza] = useState("pepperoni"); // nilai default -> pepperoni
   const [jenis2Pizza, aturJenis2Pizza] = useState([]); // menyimpan jenis-jenis pizza yang diterima dari API.
   const [loading, aturLoading] = useState(true); // menyimpan state dari pada fetching.
-  const [cart, aturCart] = useState([]);
+  const [cart, aturCart] = useContext(CartContext);
 
   let price, selectedPizza;
   if (!loading) {
