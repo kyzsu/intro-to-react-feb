@@ -1,8 +1,9 @@
 import { useState, useEffect, useContext } from "react";
+import { createLazyFileRoute } from "@tanstack/react-router";
 
-import Cart from "./Cart";
-import Pizza from "./Pizza";
-import { CartContext } from "./contexts";
+import { CartContext } from "../contexts";
+import Cart from "../Cart";
+import Pizza from "../Pizza";
 
 // format kurs --> intl menerima sebuah angka dan kemudian dia akan nge-format berdasarkan kurs yang dipilih.
 const intl = new Intl.NumberFormat("en-US", {
@@ -10,7 +11,11 @@ const intl = new Intl.NumberFormat("en-US", {
   currency: "USD",
 });
 
-export default function Order() {
+export const Route = createLazyFileRoute("/order")({
+  component: Order,
+});
+
+function Order() {
   const [ukuranPizza, aturUkuranPizza] = useState("M");
   const [jenisPizza, aturJenisPizza] = useState("pepperoni"); // nilai default -> pepperoni
   const [jenis2Pizza, aturJenis2Pizza] = useState([]); // menyimpan jenis-jenis pizza yang diterima dari API.
