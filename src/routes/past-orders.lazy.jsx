@@ -3,11 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import { createLazyFileRoute } from "@tanstack/react-router";
 
 import Modal from "../Modal";
+import ErrorBoundary from "../ErrorBoundary";
 import getPastOrder from "../api/past-order";
 import getPastOrders from "../api/past-orders";
 
 export const Route = createLazyFileRoute("/past-orders")({
-  component: pastOrderRoute,
+  component: ErrorBoundaryWrappedPastOrderRoute,
 });
 
 const intl = new Intl.NumberFormat("en-US", {
@@ -15,7 +16,15 @@ const intl = new Intl.NumberFormat("en-US", {
   currency: "USD",
 });
 
-function pastOrderRoute() {
+function ErrorBoundaryWrappedPastOrderRoute() {
+  return (
+    <ErrorBoundary>
+      <PastOrderRoute />
+    </ErrorBoundary>
+  );
+}
+
+function PastOrderRoute() {
   const [page, setPage] = useState(1);
   const { isLoading, data } = useQuery({
     queryKey: ["past-orders", page],
@@ -23,7 +32,10 @@ function pastOrderRoute() {
     staleTime: 3000,
   });
 
+  // throw new Error("test EB!"); testing error boundary
+
   const [clickedOrder, setClickedOrder] = useState();
+  const [showOrderDateTime, setShowOrderDateTime] = useState();
   const { isLoading: isLoadingPastOrder, data: pastOrderData } = useQuery({
     queryKey: ["past-order", clickedOrder],
     queryFn: () => getPastOrder(clickedOrder),
@@ -46,7 +58,7 @@ function pastOrderRoute() {
           <tr>
             <td>ID</td>
             <td>Date</td>
-            <td>Time</td>
+            {/* <td>Time</td> */}
           </tr>
         </thead>
         <tbody>
@@ -57,8 +69,16 @@ function pastOrderRoute() {
                   {order.order_id}
                 </button>
               </td>
-              <td>{order.date}</td>
-              <td>{order.time}</td>
+              <td>
+                <button
+                  onClick={() =>
+                    setShowOrderDateTime(`${order.date} ${order.time}`)
+                  }
+                >
+                  {order.date} {order.time}
+                </button>
+              </td>
+              {/* <td>{order.time}</td> */}
             </tr>
           ))}
         </tbody>
@@ -72,6 +92,12 @@ function pastOrderRoute() {
           Next
         </button>
       </div>
+      {showOrderDateTime ? (
+        <Modal>
+          <p>Halo, order ini dibuat pada {showOrderDateTime}</p>
+          <button onClick={() => setShowOrderDateTime()}>Close</button>
+        </Modal>
+      ) : null}
       {clickedOrder ? (
         <Modal>
           <h2>Order No. {clickedOrder}</h2>
